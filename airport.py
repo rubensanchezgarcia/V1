@@ -2,6 +2,7 @@ lista_aerpuertos_schengen=['LO', 'EB', 'LK', 'LC', 'EK', 'EE', 'EF', 'LF', 'ED',
 'BI','LI', 'EV', 'EY', 'EL', 'LM', 'EN', 'EP', 'LP', 'LZ', 'LJ', 'LE', 'ES',
 'LS']
 import matplotlib.pyplot as plt
+from matplotlib.backends.backend_tkagg import FigureCanvasTkAgg
 class Airport:
     def __init__(self, ICAO, latitude, longitude):
         self.ICAO= ICAO
@@ -99,6 +100,7 @@ def LoadAirports (filename):
 
 
 def SaveSchengenAirports (airports, filename):
+    SetSchengen(airports)
     f = open(filename,'w')
     f.write('CODE LAT LON\n')
     for i in range (0, len(airports)):
@@ -164,12 +166,35 @@ def PlotAirports (airports):
             schengen+=1
         elif airports[i].schengen == False:
             no_schengen+=1
-    plt.bar(["Airports"], [schengen], label="Schengen")
-    plt.bar(["Airports"], [no_schengen], bottom=[schengen], label="No Schengen")
 
-    plt.ylabel("Count")
-    plt.title("Schengen Airports")
-    plt.legend()
-    plt.show()
+    fig, ax = plt.subplots()
+    ax.bar(["Airports"], [schengen], label="Schengen")
+    ax.bar(["Airports"], [no_schengen], bottom=[schengen], label="No Schengen")
+
+    ax.set_ylabel("Count")
+    ax.set_title("Schengen Airports")
+    ax.legend()
+
+    return fig
 
 
+
+def MapAirports (Airports):
+    f = open('mapAirports.kml','w')
+    f.write('<?xml version="1.0" encoding="UTF-8"?>\n')
+    f.write('<kml xmlns="http://www.opengis.net/kml/2.2">\n')
+    f.write('<Document>\n')
+    for i in range(len(Airports)): #Creamos un bucle para añadir un punto por cada aeropuerto de la lista.
+        airport_name=Airports[i].ICAO
+        airport_longitude=Airports[i].longitude
+        airport_latitude=Airports[i].latitude
+        f.write('<Placemark> ')
+        f.write(f' <name> {airport_name} </name>\n')
+        f.write('  <Point>\n')
+        f.write('    <coordinates>\n')
+        f.write(f'    {airport_longitude},{airport_latitude}\n')
+        f.write('    </coordinates>\n')
+        f.write('   </Point>\n')
+        f.write('</Placemark>\n')
+    f.write('</Document>\n')
+    f.write('</kml>\n')
